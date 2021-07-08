@@ -5,7 +5,9 @@ class WFuzzFactory():
 	def __init__(self, proxy="127.0.0.1:8080"):
 		self.proxy = proxy
 
-	def createFuzzCreater(self, req):
+	def createFuzzCreater(self, req, proxy=None):
+		if None != proxy:
+			self.proxy = proxy
 		if isinstance(req, HttpReqPost):
 			return PostFuzzCreater(req,self.proxy)
 		elif isinstance(req, HttpReqGet):
@@ -32,17 +34,22 @@ class FuzzCreater():
 		for header in headers:
 			self.cmd += "-H \""+ header + "\" "
 
-	def createUrlFuzz(self):
-		pass
+	def createFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
+		cmds = self.createUrlFuzz(fuzzFile,withHeader,specialHeader)
+		cmds += self.createBodyFuzz(fuzzFile,withHeader,specialHeader)
+		return cmds
 
-	def createHeaderFuzz(self):
-		pass
+	def createUrlFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
+		return []
 
-	def createBodyFuzz(self):
-		pass
+	def createHeaderFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
+		return []
+
+	def createBodyFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
+		return []
 
 class PostFuzzCreater(FuzzCreater):
-	def createBodyFuzz(self, fuzzFile=None, withHeader=False, specialHeader=None):
+	def createBodyFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
 		self.genBaseCmd(fuzzFile)
 		if withHeader:
 			self.genHeader(specialHeader)
@@ -54,7 +61,7 @@ class PostFuzzCreater(FuzzCreater):
 		return cmds
 
 class GetFuzzCreater(FuzzCreater):
-	def createUrlFuzz(self, fuzzFile=None, withHeader=False, specialHeader=None):
+	def createUrlFuzz(self, fuzzFile=None, withHeader=True, specialHeader=None):
 		self.genBaseCmd(fuzzFile)
 		if withHeader:
 			self.genHeader(specialHeader)

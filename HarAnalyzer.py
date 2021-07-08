@@ -10,13 +10,20 @@ class HarAnalyzer():
         self.reqs,self.getReqs,self.postReqs,self.staticReqs = self.createReqs()
 
     def analyse(self):
+        reqsNeedFuzz = []
+        num = 0
         print("找到以下有Fuzz价值的报文:")
         for i in range(len(self.getReqs)):
-            print("Get Req id:",i," URL:",self.getReqs[i].getUrl())
+            print("Get Req id:",num," URL:",self.getReqs[i].getUrl())
+            reqsNeedFuzz.append(self.getReqs[i])
+            num+=1
         for i in range(len(self.postReqs)):
-            print("Post Req id:",i," URL:",self.postReqs[i].getUrl())
+            reqsNeedFuzz.append(self.postReqs[i])
+            print("Post Req id:",num," URL:",self.postReqs[i].getUrl())
             print("body:",self.postReqs[i].getBodyPara()["text"])
             print("\n")
+            num+=1
+        return reqsNeedFuzz
 
     def decode(self):
         with open(self.harFileName, 'r', encoding='utf-8') as f:

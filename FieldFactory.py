@@ -10,6 +10,8 @@ class FieldFactory():
 	def createFuzzCreater(self, pos, url, fuzzPara):
 		if POS_BODY == pos and "application/json" == fuzzPara["mimeType"]:
 			return JsonFuzzCreater(url, fuzzPara)
+		elif POS_BODY == pos and "application/x-www-form-urlencoded" == fuzzPara["mimeType"]:
+			return KVFuzzCreater(url, fuzzPara)
 		elif POS_URL == pos:
 			return UrlFuzzCreater(url, fuzzPara)
 
@@ -28,8 +30,18 @@ class UrlFuzzCreater(FieldFuzzCreater):
 		fuzzStrings = []
 		for para in paras:
 			pos = para.find("=")
-			fuzzStrings.append(self.url.replace(para,para[:pos+1]+"FUZZ"))
+			fuzzStrings.append("\""+self.url.replace(para,para[:pos+1]+"FUZZ")+"\"")
 		return fuzzStrings
+
+class KVFuzzCreater(FieldFuzzCreater):
+	def getFuzzOneByOne(self):
+		paras = self.fuzzPara["text"].split("&")
+		fuzzStrings = []
+		for para in paras:
+			pos = para.find("=")
+			fuzzStrings.append("-d \""+self.fuzzPara["text"].replace(para,para[:pos+1]+"FUZZ")+"\" \""+self.url+"\"")
+		return fuzzStrings
+
 
 class JsonFuzzCreater(FieldFuzzCreater):
 	def getFuzzOneByOne(self):
@@ -57,7 +69,7 @@ class JsonFuzzCreater(FieldFuzzCreater):
 	def fuzzOneField(self, dictData, key, fuzzStrings,orgDictData):
 		orgValue = dictData[key]
 		dictData[key] = "FUZZ"
-		fuzzStrings.append("-d \""+str(orgDictData).replace("\'FUZZ\'","FUZZ").replace("'","\\\"")+"\" " + self.url)
+		fuzzStrings.append("-d \""+str(orgDictData).replace("\'FUZZ\'","FUZZ").replace("'","\\\"")+"\" \"" + self.url+"\"")
 		dictData[key] = orgValue
 		return
 
